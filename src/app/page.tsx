@@ -13,6 +13,7 @@ import MusicPlayer from '@/components/MusicPlayer';
 import AdminPanel from '@/components/AdminPanel';
 import FloralDivider from '@/components/FloralDivider';
 import OrnekDivider from '@/components/OrnekDivider';
+import ScrollRevealSection from '@/components/ScrollRevealSection';
 
 export default function Home() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -68,24 +69,45 @@ export default function Home() {
 
             {/* Content sections with padding */}
             <div style={{ padding: '24px 24px 40px' }}>
-              <InviteSection />
-              <DateSection />
-              <VenueSection />
-              <ProgramSection />
+              <ScrollRevealSection>
+                <InviteSection />
+              </ScrollRevealSection>
 
-              <div className="py-6">
-                <OrnekDivider width={280} />
-              </div>
+              <ScrollRevealSection delay={100}>
+                <DateSection />
+              </ScrollRevealSection>
 
-              <RSVPSection />
+              <ScrollRevealSection delay={200}>
+                <VenueSection />
+              </ScrollRevealSection>
 
-              <HostsSection />
+              <ScrollRevealSection delay={300}>
+                <ProgramSection />
+              </ScrollRevealSection>
 
-              {/* Spacer + Floral divider before countdown */}
-              <div style={{ height: 14 }} />
-              <FloralDivider width={280} />
+              <ScrollRevealSection delay={400}>
+                <div className="py-6">
+                  <OrnekDivider width={280} />
+                </div>
+              </ScrollRevealSection>
 
-              <CountdownSection />
+              <ScrollRevealSection delay={500}>
+                <RSVPSection />
+              </ScrollRevealSection>
+
+              <ScrollRevealSection delay={600}>
+                <HostsSection />
+              </ScrollRevealSection>
+
+              <ScrollRevealSection delay={700}>
+                {/* Spacer + Floral divider before countdown */}
+                <div style={{ height: 14 }} />
+                <FloralDivider width={280} />
+              </ScrollRevealSection>
+
+              <ScrollRevealSection delay={800}>
+                <CountdownSection />
+              </ScrollRevealSection>
             </div>
           </main>
         </div>

@@ -139,35 +139,23 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Animated scroll indicator */}
+      {/* Invitation text at bottom */}
       <div
-        className="absolute flex flex-col items-center gap-2"
-        style={{ bottom: 24, left: '50%', transform: 'translateX(-50%)' }}
+        className="absolute flex flex-col items-center"
+        style={{ bottom: 24, left: '50%', transform: 'translateX(-50%)', width: '90%' }}
       >
         <div
-          className="text-[9px] tracking-[4px] uppercase opacity-75"
-          style={{ fontFamily: 'Jost', color: 'var(--sub)' }}
-        >
-          {t('scroll')}
-        </div>
-        <div
-          className="scroll-ring w-8 h-8 rounded-full border border-accent flex items-center justify-center"
+          className="text-center px-2 py-3 whitespace-pre-line"
           style={{
-            background: 'rgba(255, 255, 255, 0.8)',
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)',
-            borderColor: 'var(--accent)'
+            fontFamily: 'Cormorant Garamond',
+            fontStyle: 'italic',
+            color: 'var(--text)',
+            fontSize: 16,
+            lineHeight: 1.5,
+            letterSpacing: '0.4px'
           }}
         >
-          <svg className="scroll-arrow" width="13" height="13" viewBox="0 0 9 9" fill="none">
-            <path
-              d="M1.5 3 L4.5 6 L7.5 3"
-              stroke="var(--accent2)"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {t('invite')}
         </div>
       </div>
     </section>
