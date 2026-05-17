@@ -42,7 +42,7 @@ A beautiful, bilingual (Kazakh/Russian) wedding invitation website built with Ne
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn package manager
-- Google Sheets API credentials (for RSVP functionality)
+- MongoDB database (Atlas or local instance)
 
 ### Installation
 
@@ -64,10 +64,8 @@ cp .env.example .env.local
 
 Fill in your environment variables:
 ```env
-# Google Sheets Configuration
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----"
-GOOGLE_SHEETS_ID=your-google-sheets-id
+# MongoDB Configuration
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
 
 # Admin Configuration
 ADMIN_PASSWORD=your-secure-admin-password
@@ -123,13 +121,35 @@ src/
 
 ## 🔧 Configuration
 
-### Google Sheets Setup
+### MongoDB Setup
 
-1. Create a Google Cloud Project
-2. Enable the Google Sheets API
-3. Create a Service Account and download the JSON key
-4. Share your Google Sheet with the service account email
-5. Set up your sheet with columns: `Timestamp, Name, Attendance, Guests Count, Guest Names, Language, User Agent, IP`
+1. **Create MongoDB Atlas Account** (or use local MongoDB)
+   - Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
+   - Create a free cluster
+   - Create a database user with read/write permissions
+
+2. **Get Connection String**
+   - Copy your MongoDB connection string
+   - Replace `<password>` and `<username>` with your credentials
+   - Add your database name to the URI
+
+3. **Database Schema**
+   The RSVP collection will automatically be created with this structure:
+   ```javascript
+   {
+     timestamp: Date,
+     name: String,
+     attendance: String, // 'come', 'with', 'no'
+     guestsCount: Number,
+     guestNames: [String],
+     phone: String,
+     language: String, // 'kk', 'ru'
+     userAgent: String,
+     ip: String,
+     createdAt: Date,
+     updatedAt: Date
+   }
+   ```
 
 ### Admin Panel Access
 - **Keyboard Shortcut**: `Ctrl + Shift + S` (or `Cmd + Shift + S` on Mac)

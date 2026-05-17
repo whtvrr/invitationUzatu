@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
-
-const sheets = google.sheets('v4');
+import connectDB from '@/lib/mongoose';
+import RSVP from '@/lib/models/RSVP';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,46 +13,121 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Authenticate with Google Sheets
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
+    // Connect to MongoDB
+    await connectDB();
 
-    const authClient = await auth.getClient();
-    google.options({ auth: authClient as any });
+    // Get query parameters for filtering and pagination
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const sortBy = url.searchParams.get('sortBy') || 'timestamp';
+    const sortOrder = url.searchParams.get('sortOrder') || 'desc';
+    const attendance = url.searchParams.get('attendance');
+    const search = url.searchParams.get('search');
 
-    // Get data from Google Sheets
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-      range: 'Sheet1!A:I',
-    });
+    // Build query
+    const query: any = {};
 
-    const rows = response.data.values || [];
+    if (attendance && attendance !== 'all') {
+      query.attendance = attendance;
+    }
 
-    // Skip header row if it exists
-    const dataRows = rows.length > 0 && rows[0][0] !== 'submitted_at' ? rows : rows.slice(1);
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { guestNames: { $elemMatch: { $regex: search, $options: 'i' } } }
+      ];
+    }
 
-    // Transform rows into objects
-    const submissions = dataRows.map((row: any[]) => ({
-      submittedAt: row[0] || '',
-      language: row[1] || '',
-      name: row[2] || '',
-      attendance: row[3] || '',
-      guestsCount: parseInt(row[4]) || 0,
-      guestNames: row[5] || '',
-      phone: row[6] || '',
-      ip: row[7] || '',
-      userAgent: row[8] || '',
+    // Build sort object
+    const sortObj: any = {};
+    sortObj[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Execute query with pagination
+    const skip = (page - 1) * limit;
+
+    const [submissions, totalCount] = await Promise.all([
+      RSVP.find(query)
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limit)
+        .select('-__v') // Exclude version field
+        .lean(), // Return plain objects instead of Mongoose documents
+      RSVP.countDocuments(query)
+    ]);
+
+    // Get statistics
+    const stats = await RSVP.aggregate([
+      {
+        $group: {
+          _id: '$attendance',
+          count: { $sum: 1 },
+          totalGuests: {
+            $sum: {
+              $cond: [
+                { $eq: ['$attendance', 'with'] },
+                { $add: ['$guestsCount', 1] }, // +1 for the person themselves
+                { $cond: [{ $eq: ['$attendance', 'come'] }, 1, 0] }
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Transform submissions to match expected format
+    const transformedSubmissions = submissions.map((submission: any) => ({
+      _id: submission._id,
+      submittedAt: submission.timestamp || submission.createdAt,
+      language: submission.language,
+      name: submission.name,
+      attendance: submission.attendance,
+      guestsCount: submission.guestsCount || 0,
+      guestNames: submission.guestNames ? submission.guestNames.join(', ') : '',
+      phone: submission.phone || '',
+      ip: submission.ip || '',
+      userAgent: submission.userAgent || '',
     }));
 
-    return NextResponse.json({ submissions });
+    // Transform stats
+    const statisticsObj = {
+      come: { count: 0, totalGuests: 0 },
+      with: { count: 0, totalGuests: 0 },
+      no: { count: 0, totalGuests: 0 },
+      total: totalCount
+    };
 
-  } catch (error) {
+    stats.forEach(stat => {
+      if (statisticsObj[stat._id as keyof typeof statisticsObj]) {
+        (statisticsObj[stat._id as keyof typeof statisticsObj] as any).count = stat.count;
+        (statisticsObj[stat._id as keyof typeof statisticsObj] as any).totalGuests = stat.totalGuests;
+      }
+    });
+
+    return NextResponse.json({
+      submissions: transformedSubmissions,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1
+      },
+      statistics: statisticsObj
+    });
+
+  } catch (error: any) {
     console.error('Admin submissions error:', error);
+
+    // Handle MongoDB connection errors
+    if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      return NextResponse.json(
+        { error: 'Database connection error' },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to fetch submissions' },
       { status: 500 }

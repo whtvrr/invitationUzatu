@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
 import { rsvpSchema } from '@/lib/schemas';
-
-const sheets = google.sheets('v4');
+import connectDB from '@/lib/mongoose';
+import RSVP from '@/lib/models/RSVP';
 
 // Rate limiting (simple in-memory store)
 const rateLimiter = new Map<string, { count: number; resetTime: number }>();
@@ -26,6 +25,9 @@ function checkRateLimit(ip: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    // Connect to MongoDB
+    await connectDB();
+
     // Rate limiting
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     if (!checkRateLimit(ip)) {
@@ -39,49 +41,49 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = rsvpSchema.parse(body);
 
-    // Authenticate with Google Sheets
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
-
-    const authClient = await auth.getClient();
-    google.options({ auth: authClient as any });
-
-    // Prepare row data
-    const timestamp = new Date().toISOString();
+    // Get additional metadata
     const userAgent = request.headers.get('user-agent') || '';
-    const guestNamesString = validatedData.guestNames?.join(', ') || '';
 
-    const row = [
-      timestamp,
-      validatedData.language,
-      validatedData.name,
-      validatedData.attendance,
-      validatedData.guestsCount || 0,
-      guestNamesString,
-      validatedData.phone || '',
-      ip,
+    // Create new RSVP document
+    const rsvpData = {
+      name: validatedData.name,
+      attendance: validatedData.attendance,
+      guestsCount: validatedData.guestsCount,
+      guestNames: validatedData.guestNames,
+      phone: validatedData.phone,
+      language: validatedData.language,
       userAgent,
-    ];
+      ip,
+    };
 
-    // Append to Google Sheets
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-      range: 'Sheet1!A:I',
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [row],
-      },
+    const newRSVP = new RSVP(rsvpData);
+    await newRSVP.save();
+
+    return NextResponse.json({
+      ok: true,
+      message: 'RSVP submitted successfully',
+      id: newRSVP._id
     });
 
-    return NextResponse.json({ ok: true });
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('RSVP submission error:', error);
+
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid data provided' },
+        { status: 400 }
+      );
+    }
+
+    // Handle MongoDB connection errors
+    if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      return NextResponse.json(
+        { ok: false, error: 'Database connection error' },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { ok: false, error: 'Failed to submit RSVP' },
       { status: 500 }
