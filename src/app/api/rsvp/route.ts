@@ -25,8 +25,12 @@ function checkRateLimit(ip: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('RSVP API: Starting request processing');
+
     // Connect to MongoDB
+    console.log('RSVP API: Attempting MongoDB connection');
     await connectDB();
+    console.log('RSVP API: MongoDB connection successful');
 
     // Rate limiting
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
@@ -51,7 +55,6 @@ export async function POST(request: NextRequest) {
       guestsCount: validatedData.guestsCount,
       guestNames: validatedData.guestNames,
       phone: validatedData.phone,
-      language: validatedData.language,
       userAgent,
       ip,
     };
@@ -66,26 +69,35 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('RSVP submission error:', error);
+    console.error('RSVP submission error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
 
     // Handle validation errors
-    if (error.name === 'ValidationError') {
+    if (error.name === 'ValidationError' || error.name === 'ZodError') {
       return NextResponse.json(
-        { ok: false, error: 'Invalid data provided' },
+        { ok: false, error: 'Invalid data provided', details: error.message },
         { status: 400 }
       );
     }
 
     // Handle MongoDB connection errors
-    if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+    if (error.name === 'MongoError' ||
+        error.name === 'MongoServerError' ||
+        error.name === 'MongoNetworkError' ||
+        error.message?.includes('ENOTFOUND') ||
+        error.message?.includes('connection')) {
       return NextResponse.json(
-        { ok: false, error: 'Database connection error' },
+        { ok: false, error: 'Database connection error', details: error.message },
         { status: 503 }
       );
     }
 
     return NextResponse.json(
-      { ok: false, error: 'Failed to submit RSVP' },
+      { ok: false, error: 'Failed to submit RSVP', details: error.message },
       { status: 500 }
     );
   }

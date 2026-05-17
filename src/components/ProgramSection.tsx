@@ -21,7 +21,6 @@ export default function ProgramSection() {
   const { t } = useLang();
 
   const programItems = [
-    ['16:30', t('p1Title'), t('p1Sub')],
     ['18:00', t('p2Title'), t('p2Sub')],
   ];
 

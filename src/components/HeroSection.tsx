@@ -7,6 +7,20 @@ export default function HeroSection() {
 
   return (
     <section className="relative" style={{ height: 540, overflow: 'hidden' }}>
+      {/* Corner decorative elements */}
+      <img
+        src="/top-left.png"
+        alt=""
+        className="absolute top-0 left-0 z-10"
+        style={{ width: 120, height: 'auto' }}
+      />
+      <img
+        src="/top-right.png"
+        alt=""
+        className="absolute top-0 right-0 z-10"
+        style={{ width: 120, height: 'auto' }}
+      />
+
       {/* Complex gradient background with SVG */}
       <div className="absolute inset-0 hero-gradient">
         <svg
@@ -72,39 +86,34 @@ export default function HeroSection() {
 
       {/* Main Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingBottom: 60 }}>
-        <div
-          className="text-[11px] tracking-[8px] uppercase opacity-85 mb-6"
-          style={{ fontFamily: 'Jost', color: 'var(--sub)' }}
-        >
-          {t('sup')}
-        </div>
+        <div className="relative">
+          <div
+            className="leading-[0.92]"
+            style={{
+              fontFamily: '"Great Vibes", cursive',
+              fontSize: 'clamp(80px, 22vw, 120px)',
+              fontWeight: 400,
+              color: 'var(--text)',
+              letterSpacing: '2px'
+            }}
+          >
+            {t('name')}
+          </div>
 
-        <div
-          className="leading-[0.92] tracking-[6px]"
-          style={{
-            fontFamily: 'Cormorant Garamond',
-            fontSize: 'clamp(80px, 22vw, 120px)',
-            fontWeight: 300,
-            color: 'var(--text)'
-          }}
-        >
-          {t('name')}
-        </div>
-
-        {/* Botanical floral divider */}
-        <div className="mt-6">
-          <svg width="240" height="28" viewBox="0 0 200 28" fill="none" className="block mx-auto max-w-full">
-            <line x1="0" y1="14" x2="80" y2="14" stroke="var(--accent2)" strokeWidth="0.5" opacity="0.4"/>
-            <line x1="120" y1="14" x2="200" y2="14" stroke="var(--accent2)" strokeWidth="0.5" opacity="0.4"/>
-            <path d="M80,14 Q86,6 91,10 Q88,16 80,14Z" fill="var(--accent2)" opacity="0.3"/>
-            <path d="M80,14 Q86,22 91,18 Q88,12 80,14Z" fill="var(--accent2)" opacity="0.22"/>
-            <path d="M73,14 Q78,7 82,11 Q80,16 73,14Z" fill="var(--accent2)" opacity="0.18"/>
-            <circle cx="100" cy="14" r="4" stroke="var(--accent2)" strokeWidth="0.8" fill="none" opacity="0.7"/>
-            <circle cx="100" cy="14" r="2" fill="var(--accent2)" opacity="0.5"/>
-            <path d="M120,14 Q114,6 109,10 Q112,16 120,14Z" fill="var(--accent2)" opacity="0.3"/>
-            <path d="M120,14 Q114,22 109,18 Q112,12 120,14Z" fill="var(--accent2)" opacity="0.22"/>
-            <path d="M127,14 Q122,7 118,11 Q120,16 127,14Z" fill="var(--accent2)" opacity="0.18"/>
-          </svg>
+          <div
+            className="leading-[0.92]"
+            style={{
+              fontFamily: '"Great Vibes", cursive',
+              fontSize: 'clamp(32px, 8vw, 48px)',
+              fontWeight: 400,
+              color: 'var(--accent2)',
+              letterSpacing: '1px',
+              marginTop: '-8px',
+              marginLeft: 'clamp(50px, 15vw, 85px)'
+            }}
+          >
+            {t('sup')}
+          </div>
         </div>
 
         <div
@@ -117,6 +126,16 @@ export default function HeroSection() {
           }}
         >
           {t('date')}
+        </div>
+
+        {/* Horizontal divider below date */}
+        <div className="mt-6">
+          <img
+            src="/horizontal.png"
+            alt=""
+            style={{ width: 240, height: 'auto', maxWidth: '100%' }}
+            className="block mx-auto"
+          />
         </div>
       </div>
 

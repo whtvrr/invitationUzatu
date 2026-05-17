@@ -82,7 +82,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   };
 
   const exportCSV = () => {
-    const headers = ['Дата', 'Имя', 'Посещение', 'Гостей', 'Имена гостей', 'Язык', 'Телефон'];
+    const headers = ['Дата', 'Имя', 'Посещение', 'Гостей', 'Имена гостей'];
     const csvContent = [
       headers.join(','),
       ...filteredSubmissions.map(sub => [
@@ -90,9 +90,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
         sub.name,
         sub.attendance === 'come' ? 'Приду' : sub.attendance === 'with' ? 'С гостями' : 'Не смогу',
         sub.guestsCount,
-        `"${sub.guestNames}"`,
-        sub.language === 'kk' ? 'Казахский' : 'Русский',
-        sub.phone
+        `"${sub.guestNames}"`
       ].join(','))
     ].join('\n');
 
@@ -112,9 +110,13 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
   const stats = {
     total: submissions.length,
-    coming: submissions.filter(s => s.attendance === 'come').length,
+    coming: submissions.filter(s => s.attendance === 'come' || s.attendance === 'with').length,
     withGuests: submissions.filter(s => s.attendance === 'with').length,
-    totalGuests: submissions.reduce((sum, s) => sum + (s.guestsCount || 0), 0),
+    totalGuests: submissions.reduce((sum, s) => {
+      if (s.attendance === 'come') return sum + 1;
+      if (s.attendance === 'with') return sum + 1 + (s.guestsCount || 0);
+      return sum;
+    }, 0),
     notComing: submissions.filter(s => s.attendance === 'no').length,
   };
 
@@ -229,8 +231,6 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     <th className="border border-gray-200 px-4 py-2 text-left">Посещение</th>
                     <th className="border border-gray-200 px-4 py-2 text-left">Гостей</th>
                     <th className="border border-gray-200 px-4 py-2 text-left">Имена гостей</th>
-                    <th className="border border-gray-200 px-4 py-2 text-left">Язык</th>
-                    <th className="border border-gray-200 px-4 py-2 text-left">Телефон</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,12 +257,6 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       </td>
                       <td className="border border-gray-200 px-4 py-2 text-sm">
                         {sub.guestNames}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-sm">
-                        {sub.language === 'kk' ? 'Қазақша' : 'Русский'}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2 text-sm">
-                        {sub.phone}
                       </td>
                     </tr>
                   ))}

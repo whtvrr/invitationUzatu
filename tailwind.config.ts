@@ -23,6 +23,7 @@ const config: Config = {
       fontFamily: {
         'cormorant': ['var(--font-cormorant)'],
         'jost': ['var(--font-jost)'],
+        'cursive': ['var(--font-cursive)'],
       },
       letterSpacing: {
         'wider-2': '2px',

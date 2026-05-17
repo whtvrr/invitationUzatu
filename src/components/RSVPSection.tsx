@@ -6,7 +6,7 @@ import { RSVPFormData, rsvpSchema } from '@/lib/schemas';
 import FloralDivider from './FloralDivider';
 
 export default function RSVPSection() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const [name, setName] = useState('');
   const [choice, setChoice] = useState<string | null>(null);
   const [guestCount, setGuestCount] = useState<number | null>(null);
@@ -34,7 +34,6 @@ export default function RSVPSection() {
       choice,
       guestCount: choice === 'with' ? guestCount : null,
       guestNames: choice === 'with' ? guestNames.slice(0, guestCount || 0).map(s => s || '') : [],
-      lang,
     };
 
     try {
@@ -47,7 +46,6 @@ export default function RSVPSection() {
           attendance: payload.choice,
           guestsCount: payload.guestCount,
           guestNames: payload.guestNames,
-          language: payload.lang,
         }),
       });
 

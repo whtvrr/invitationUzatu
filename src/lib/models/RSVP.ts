@@ -7,7 +7,6 @@ export interface IRSVP extends Document {
   guestsCount?: number;
   guestNames?: string[];
   phone?: string;
-  language: 'kk' | 'ru';
   userAgent?: string;
   ip?: string;
 }
@@ -47,12 +46,6 @@ const RSVPSchema = new Schema<IRSVP>({
     trim: true,
     maxlength: 20
   },
-  language: {
-    type: String,
-    required: true,
-    enum: ['kk', 'ru'],
-    default: 'kk'
-  },
   userAgent: {
     type: String,
     maxlength: 500
@@ -68,6 +61,6 @@ const RSVPSchema = new Schema<IRSVP>({
 // Create indexes for better performance
 RSVPSchema.index({ timestamp: -1 });
 RSVPSchema.index({ attendance: 1 });
-RSVPSchema.index({ name: 'text' }); // Text search index
+// Text search index removed to avoid language conflicts
 
 export default mongoose.models.RSVP || mongoose.model<IRSVP>('RSVP', RSVPSchema);

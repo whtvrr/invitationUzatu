@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
     const transformedSubmissions = submissions.map((submission: any) => ({
       _id: submission._id,
       submittedAt: submission.timestamp || submission.createdAt,
-      language: submission.language,
+      language: 'қазақша', // Fixed since we removed language field
       name: submission.name,
       attendance: submission.attendance,
       guestsCount: submission.guestsCount || 0,

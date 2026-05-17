@@ -9,7 +9,6 @@ import ProgramSection from '@/components/ProgramSection';
 import RSVPSection from '@/components/RSVPSection';
 import HostsSection from '@/components/HostsSection';
 import CountdownSection from '@/components/CountdownSection';
-import LanguageToggle from '@/components/LanguageToggle';
 import MusicPlayer from '@/components/MusicPlayer';
 import AdminPanel from '@/components/AdminPanel';
 import FloralDivider from '@/components/FloralDivider';
@@ -17,6 +16,20 @@ import OrnekDivider from '@/components/OrnekDivider';
 
 export default function Home() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+
+  // Warm up database connection on page load
+  useEffect(() => {
+    fetch('/api/warmup')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          console.log('✅ Database connection warmed up');
+        }
+      })
+      .catch(err => {
+        console.log('⚠️ Database warmup failed:', err);
+      });
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -47,7 +60,6 @@ export default function Home() {
           }}
         >
           {/* Controls */}
-          <LanguageToggle />
           <MusicPlayer />
 
           {/* Main Content */}
