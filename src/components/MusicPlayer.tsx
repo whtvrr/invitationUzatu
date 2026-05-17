@@ -1,97 +1,63 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import audioManager from '@/lib/audioManager';
 
 export default function MusicPlayer() {
-  const [isPlaying, setIsPlaying] = useState(true); // Default to playing
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [hasAppeared, setHasAppeared] = useState(false);
 
   useEffect(() => {
-    const audio = new Audio('/music.mp3');
-    audio.loop = true;
-    audio.volume = 0.3;
-    audioRef.current = audio;
+    // Subscribe to audio manager state changes
+    const unsubscribe = audioManager.onStateChange((playing) => {
+      setIsPlaying(playing);
+      localStorage.setItem('samal_music', playing.toString());
+    });
 
-    // Set default playing state (music should be on by default)
-    setIsPlaying(true);
+    // Initialize state from audio manager
+    setIsPlaying(audioManager.isPlaying);
 
-    // Multiple autoplay attempts
-    const attemptAutoplay = async () => {
-      try {
-        await audio.play();
-        setIsPlaying(true);
-        localStorage.setItem('samal_music', 'true');
-      } catch (error) {
-        console.log('Initial autoplay blocked:', error);
-        // Still show as playing so user knows music should be on
-        setIsPlaying(true);
-      }
-    };
-
-    // Try autoplay as soon as possible
-    if (audio.readyState >= 2) {
-      attemptAutoplay();
-    } else {
-      audio.addEventListener('loadeddata', attemptAutoplay);
-      audio.addEventListener('canplaythrough', attemptAutoplay);
-    }
-
+    // Always set loaded to true since audio manager handles initialization
     setIsLoaded(true);
 
-    // Try autoplay on any user interaction
-    const startOnInteraction = () => {
-      if (!audio.paused) return;
-      audio.play().catch(() => {});
-      document.removeEventListener('click', startOnInteraction);
-      document.removeEventListener('keydown', startOnInteraction);
-      document.removeEventListener('touchstart', startOnInteraction);
-    };
+    // Mark as appeared after initial animation completes
+    const timer = setTimeout(() => {
+      setHasAppeared(true);
+    }, 700);
 
-    document.addEventListener('click', startOnInteraction);
-    document.addEventListener('keydown', startOnInteraction);
-    document.addEventListener('touchstart', startOnInteraction);
+    console.log('🎵 MusicPlayer connected to AudioManager', {
+      isInitialized: audioManager.isInitialized,
+      isPlaying: audioManager.isPlaying
+    });
 
-    // Clean up on unmount
+    // Cleanup subscription on unmount
     return () => {
-      audio.removeEventListener('loadeddata', attemptAutoplay);
-      audio.removeEventListener('canplaythrough', attemptAutoplay);
-      document.removeEventListener('click', startOnInteraction);
-      document.removeEventListener('keydown', startOnInteraction);
-      document.removeEventListener('touchstart', startOnInteraction);
-      audio.pause();
-      audio.src = '';
+      clearTimeout(timer);
+      unsubscribe();
     };
   }, []);
 
-  useEffect(() => {
-    if (!audioRef.current || !isLoaded) return;
-
-    if (isPlaying) {
-      audioRef.current.play().catch((error) => {
-        console.log('Play prevented:', error);
-        // Don't set to false immediately, let user interaction handle it
-      });
-    } else {
-      audioRef.current.pause();
-    }
-
-    localStorage.setItem('samal_music', isPlaying.toString());
-  }, [isPlaying, isLoaded]);
-
   const toggleMusic = () => {
-    setIsPlaying(!isPlaying);
+    console.log('🎵 Music toggle clicked');
+    audioManager.toggle();
   };
-
-  if (!isLoaded) return null;
 
   return (
     <button
       onClick={toggleMusic}
-      className="fixed top-6 left-6 z-50 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-accent/40 flex items-center justify-center hover:bg-white hover:scale-105 transition-all duration-300"
+      className={`fixed top-6 left-6 z-50 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-accent/40 flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 ${
+        isPlaying ? 'animate-pulse shadow-xl' : ''
+      }`}
       title={isPlaying ? 'Музыканы өшіру' : 'Музыканы қосу'}
       style={{
         borderColor: 'var(--accent)',
+        animation: isPlaying
+          ? 'musicPulse 2s ease-in-out infinite'
+          : (hasAppeared ? 'none' : 'slideIn 0.6s ease-out'),
+        boxShadow: isPlaying
+          ? '0 12px 40px rgba(243, 195, 178, 0.4), 0 0 20px rgba(243, 195, 178, 0.3)'
+          : '0 8px 24px rgba(139, 111, 63, 0.15)',
       }}
     >
       {!isLoaded ? (

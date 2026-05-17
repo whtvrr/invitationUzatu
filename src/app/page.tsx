@@ -14,12 +14,17 @@ import AdminPanel from '@/components/AdminPanel';
 import FloralDivider from '@/components/FloralDivider';
 import OrnekDivider from '@/components/OrnekDivider';
 import ScrollRevealSection from '@/components/ScrollRevealSection';
+import InvitationOverlay from '@/components/InvitationOverlay';
+import BackgroundAudio from '@/components/BackgroundAudio';
 
 export default function Home() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [overlayVisible, setOverlayVisible] = useState(true);
 
-  // Warm up database connection on page load
+  // Initialize audio manager and warm up database on page load
   useEffect(() => {
+    console.log('🎵 Audio manager pre-loaded on page load');
+
     fetch('/api/warmup')
       .then(res => res.json())
       .then(data => {
@@ -30,6 +35,9 @@ export default function Home() {
       .catch(err => {
         console.log('⚠️ Database warmup failed:', err);
       });
+
+    // Audio manager persists across the page lifetime
+    // No cleanup needed - browser handles audio on page unload
   }, []);
 
   useEffect(() => {
@@ -49,6 +57,12 @@ export default function Home() {
 
   return (
     <>
+      {/* Background Audio - Always rendered to persist music */}
+      <BackgroundAudio />
+
+      {/* Invitation Opening Overlay */}
+      <InvitationOverlay onVisibilityChange={setOverlayVisible} />
+
       {/* Desktop: Paper card effect */}
       <div className="md:min-h-screen md:py-6" style={{ background: '#E8E0D6' }}>
         <div
@@ -60,7 +74,7 @@ export default function Home() {
             position: 'relative'
           }}
         >
-          {/* Controls */}
+          {/* Controls - always visible */}
           <MusicPlayer />
 
           {/* Main Content */}
