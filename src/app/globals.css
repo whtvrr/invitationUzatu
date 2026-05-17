@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  --bg: #FDF8F5;
+  --card: #FFFFFF;
+  --text: #3D2A1E;
+  --sub: #9A7060;
+  --accent: #F3C3B2;
+  --accent2: #C9A46A;
+  --countdown: #FDE8D3;
+  --border: rgba(243, 195, 178, 0.4);
+  --btn: #F3C3B2;
+  --btnText: #3D2A1E;
+
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-jost: 'Jost', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-jost);
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.hero-gradient {
+  background: linear-gradient(180deg, #FDE8D3 0%, rgba(243,195,178,0.35) 35%, rgba(243,195,178,0.15) 65%, #FDF8F5 100%);
+}
+
+.paper-shadow {
+  box-shadow: 0 24px 48px rgba(139, 111, 63, 0.12);
+}
+
+.text-caps {
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes bounceArrow {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+@keyframes pulseRing {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.scroll-arrow { animation: bounceArrow 1.8s ease-in-out infinite; }
+.scroll-ring { animation: pulseRing 2.4s ease-in-out infinite; }
+.fade-in { animation: fadeIn 0.4s ease-out both; }
