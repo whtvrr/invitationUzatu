@@ -121,8 +121,9 @@ export default function HeroSection() {
           style={{
             fontFamily: 'Cormorant Garamond',
             fontStyle: 'italic',
-            fontSize: 18,
-            color: 'var(--sub)'
+            fontSize: 24,
+            fontWeight: 500,
+            color: 'var(--text)'
           }}
         >
           {t('date')}
@@ -150,7 +151,8 @@ export default function HeroSection() {
             fontFamily: 'Cormorant Garamond',
             fontStyle: 'italic',
             color: 'var(--text)',
-            fontSize: 16,
+            fontSize: 20,
+            fontWeight: 500,
             lineHeight: 1.5,
             letterSpacing: '0.4px'
           }}
